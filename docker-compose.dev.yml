@@ -1,0 +1,47 @@
+version: '3.7'
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    image: emapp-server
+    container_name: emapp-node-server
+    command: npm run server
+    volumes:
+      - ./server/:/server
+      - /server/node_modules
+    ports:
+      - "5000:5000"
+    env_file: ./server/.env
+    environment:
+      - NODE_ENV=development
+    networks:
+      - app-network
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    image: emapp-client
+    container_name: emapp-react-client
+    command: npm run start
+    volumes:
+      - ./client/:/client
+      - /client/node_modules
+    depends_on:
+      - server
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    networks:
+      - app-network
+
+networks:
+    app-network:
+        driver: bridge
+
+volumes:
+    data-volume:
+    node_modules:
+    web-root:
+      driver: local
