@@ -31,7 +31,8 @@ router.post("/register", (req, res) => {
   }
 
   // get form values using req name,email and password
-  const name = req.body.name;
+  const firstname = req.body.firstname;
+  const lastname = req.body.lastname;
   const email = req.body.email;
   const password = req.body.password;
 
@@ -47,7 +48,8 @@ router.post("/register", (req, res) => {
     } else {
       // if user does  not exist create new user here
       const NewUser = new User({
-        name,
+        firstname,
+        lastname,
         email,
         password
       });
@@ -83,12 +85,66 @@ router.post("/register", (req, res) => {
                     {
                       new: true
                     }
-                  ).then(profile => res.json(profile));
+                  ).then(profile => {
+                    //res.json(profile)
+                    //  if the password match we need to create jsonwebtoken
+                    const payload = {
+                      id: user.id,
+                      name: user.name,
+                      email: user.email,
+                      role: user.role,
+                      date: user.date
+                    };
+                    //   here we sign the jsonwebtoken using below methods
+                    jwt.sign(
+                      payload,
+                      key,
+                      {
+                        expiresIn: 3600
+                      },
+                      (err, token) => {
+                        return res
+                          .json({
+                            message: "success",
+                            accessToken: token,
+                            user: user
+                          })
+                          .catch(console.log(err));
+                      }
+                    );
+                  });
                 } else {
                   // Create
                   new Profile(profileFields)
                     .save()
-                    .then(profile => res.json(profile));
+                    .then(profile => { 
+                      //res.json(profile) 
+                      //  if the password match we need to create jsonwebtoken
+                      const payload = {
+                        id: user.id,
+                        name: user.name,
+                        email: user.email,
+                        role: user.role,
+                        date: user.date
+                      };
+                      //   here we sign the jsonwebtoken using below methods
+                      jwt.sign(
+                        payload,
+                        key,
+                        {
+                          expiresIn: 3600
+                        },
+                        (err, token) => {
+                          return res
+                            .json({
+                              message: "success",
+                              accessToken: token,
+                              user: user
+                            })
+                            .catch(console.log(err));
+                        }
+                      );
+                    });
                 }
               });
 
@@ -153,7 +209,8 @@ router.post("/login", (req, res) => {
             return res
               .json({
                 message: "success",
-                token: "Bearer " + token
+                //token: "Bearer " + token
+                accessToken: token
               })
               .catch(console.log(err));
           }

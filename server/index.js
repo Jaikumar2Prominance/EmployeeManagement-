@@ -1,5 +1,6 @@
 //  Import the external libraries
 const express = require("express");
+const cors = require('cors');
 const mongoose = require("mongoose");
 const bodyparser = require("body-parser");
 const passport = require("passport");
@@ -9,6 +10,8 @@ const passport = require("passport");
 const users = require("./routes/api/users");
 const profile = require("./routes/api/profile");
 const transfer = require("./routes/api/transfer");
+
+const seedDb = require('./utils/seed');
 
 // Import Keys
 const uri = require("./config/keys");
@@ -26,10 +29,14 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
     "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
+    "X-Requested-With, Content-Type, Accept"
   );
   next();
 });
+
+app.use(cors({
+  origin: '*'
+}));
 
 // parse application/json
 app.use(bodyparser.json());
@@ -41,7 +48,10 @@ mongoose
       useNewUrlParser: true
     }
   )
-  .then(() => console.log("DB connected success"))
+  .then(() => {
+    console.log("DB connected success")
+    seedDb()
+  })
   .catch(err => console.log(err));
 
 // passport middleware added
@@ -69,7 +79,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 //  Assigning the port eg. http://localhost:5000 for local environment for heroku we use process.env.port
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 
 // finally app listen the port 5000
 app.listen(port, () => {
